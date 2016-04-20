@@ -1,7 +1,17 @@
 package com.example.s104522061.midterm_c;
 
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -11,17 +21,21 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private Button showName;
     private Button classBtn[][];
 
+    private SQLiteDatabase db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        db = MyDBHelper.getDatabase(MainActivity.this);
 
         showName();
         initClassBtn();
@@ -75,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
             for(int j=0;j<6;j++) {
                 classBtn[i][j] = (Button) findViewById(btnID[i][j]);
                 classBtn[i][j].setOnClickListener(new addClass(i, j));
+                classBtn[i][j].setOnLongClickListener(new deleteClass(i, j));
+                classBtn[i][j].setText(getClassName(i, j));
             }
         }
     }
@@ -98,5 +114,65 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
+    }
+
+    private class deleteClass implements Button.OnLongClickListener {
+        private int day;
+        private int section;
+
+        public deleteClass(int day, int section) {
+            this.day = day;
+            this.section = section;
+        }
+
+        @Override
+        public boolean onLongClick(final View v) {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(getString(R.string.deleteClass))
+                    .setMessage(getString(R.string.suretodeleteClass))
+                            .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    ContentValues cv = new ContentValues();
+                                    cv.put(MyDBHelper.NAME_COLUMN, "");
+                                    String where = "day=" + day + " AND section=" + section;
+
+                                    db.update(MyDBHelper.TABLE_NAME, cv, where, null);
+                                    showChangeMessage();
+                                    Button btn = (Button) findViewById(v.getId());
+                                    btn.setText("");
+                                }
+                            })
+                            .setNeutralButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            })
+                            .show();
+
+            return false;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void showChangeMessage() {
+        final int notifyID = 1; // 通知的識別號碼
+        final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE); // 取得系統的通知服務
+        final Notification notification = new Notification.Builder(getApplicationContext()).setSmallIcon(android.R.drawable.ic_dialog_alert).setContentTitle("我的課表").setContentText("課表更新完成").build(); // 建立通知
+        notificationManager.notify(notifyID, notification); // 發送通知
+    }
+
+    private String getClassName(int day, int section) {
+        String className = "";
+        String query[] = {"name"};
+        String where = "day=" + day + " AND section=" + section;
+
+        Cursor cursor = db.query(MyDBHelper.TABLE_NAME, query, where, null, null, null, null, null);
+
+        while(cursor.moveToNext()) {
+            className = cursor.getString(0);
+        }
+
+        return className;
     }
 }
