@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Midtern_c</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_quit">Quit</string>
+    <string name="setting_name">設定名稱：</string>
+    <string name="save">儲存</string>
+    <string name="class_name">課程名稱：</string>
+    <string name="confirm">確認</string>
+    <string name="monday">星期一</string>
+    <string name="tuesday">星期二</string>
+    <string name="wednesday">星期三</string>
+    <string name="thursday">星期四</string>
+    <string name="friday">星期五</string>
+    <string name="section1">第 1 節</string>
+    <string name="section2">第 2 節</string>
+    <string name="section3">第 3 節</string>
+    <string name="section4">第 4 節</string>
+    <string name="section5">第 5 節</string>
+    <string name="section6">第 6 節</string>
+</resources>
